@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9288770962100185"
+    crossorigin="anonymous"></script>
+  <meta charset="UTF-8" />
+  <title>Play Classic Snake Game - Big Screen PC Edition</title>
+  <meta name="description" content="Play the classic Snake Game online for free on your desktop browser. Challenge yourself with high-speed gameplay, real-time scoring, and a beautiful retro design. Perfect for fans of nostalgic arcade games and PC-based fun.">
+  <meta name="naver-site-verification" content="b366dbb6459aafa1c91f8f26b783724b86199d71" />
+  <style>
+    body {
+      background-color: #000;
+      color: #0f0;
+      font-family: 'Courier New', Courier, monospace;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    h1 {
+      font-size: 2em;
+      margin-top: 20px;
+    }
+
+    #gameCanvas {
+      background-color: #111;
+      display: block;
+      margin: 20px auto;
+      border: 3px solid #0f0;
+      width: 800px;
+      height: 600px;
+    }
+
+    #ui {
+      margin-top: 10px;
+      font-size: 1.2em;
+    }
+
+    .highlight {
+      color: yellow;
+      font-weight: bold;
+    }
+
+    #startBtn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 1em;
+      background-color: #0f0;
+      color: black;
+      border: none;
+      cursor: pointer;
+    }
+
+    #startBtn:hover {
+      background-color: #8f8;
+    }
+
+    footer {
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🐍 Classic Snake Game</h1>
+  <canvas id="gameCanvas" width="800" height="600"></canvas>
+  
+  <div id="ui">
+    Score: <span id="score">0</span> |
+    Time: <span id="time">0</span> sec
+  </div>
+
+  <button id="startBtn">Start Game</button>
+
+  <footer>
+    <!-- Replace with your AdSense client ID -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9288770962100185"
+            crossorigin="anonymous"></script>
+    <ins class="adsbygoogle"
+        style="display:block"
+        data-ad-client="ca-pub-9288770962100185"
+        data-ad-slot="6399153707"
+        data-ad-format="auto"
+        data-full-width-responsive="true"></ins>
+    <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+  </footer>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const scoreEl = document.getElementById("score");
+    const timeEl = document.getElementById("time");
+    const startBtn = document.getElementById("startBtn");
+
+    const scale = 20;
+    const rows = canvas.height / scale;
+    const cols = canvas.width / scale;
+
+    let snake;
+    let food;
+    let interval;
+    let timer;
+    let seconds;
+
+    class Snake {
+      constructor() {
+        this.body = [{ x: 10, y: 10 }];
+        this.xSpeed = 1;
+        this.ySpeed = 0;
+        this.total = 0;
+      }
+
+      draw() {
+        ctx.fillStyle = "#0f0";
+        for (let segment of this.body) {
+          ctx.fillRect(segment.x * scale, segment.y * scale, scale - 2, scale - 2);
+        }
+      }
+
+      update() {
+        const head = { ...this.body[this.body.length - 1] };
+        head.x += this.xSpeed;
+        head.y += this.ySpeed;
+
+        if (head.x < 0 || head.x >= cols || head.y < 0 || head.y >= rows || this.collides(head)) {
+          endGame();
+          return;
+        }
+
+        this.body.push(head);
+
+        if (head.x === food.x && head.y === food.y) {
+          this.total++;
+          placeFood();
+        } else {
+          this.body.shift();
+        }
+      }
+
+      changeDirection(dir) {
+        switch (dir) {
+          case "ArrowUp":
+            if (this.ySpeed === 0) {
+              this.xSpeed = 0;
+              this.ySpeed = -1;
+            }
+            break;
+          case "ArrowDown":
+            if (this.ySpeed === 0) {
+              this.xSpeed = 0;
+              this.ySpeed = 1;
+            }
+            break;
+          case "ArrowLeft":
+            if (this.xSpeed === 0) {
+              this.xSpeed = -1;
+              this.ySpeed = 0;
+            }
+            break;
+          case "ArrowRight":
+            if (this.xSpeed === 0) {
+              this.xSpeed = 1;
+              this.ySpeed = 0;
+            }
+            break;
+        }
+      }
+
+      collides(pos) {
+        return this.body.some(seg => seg.x === pos.x && seg.y === pos.y);
+      }
+    }
+
+    function placeFood() {
+      food = {
+        x: Math.floor(Math.random() * cols),
+        y: Math.floor(Math.random() * rows)
+      };
+    }
+
+    function drawFood() {
+      ctx.fillStyle = "red";
+      ctx.fillRect(food.x * scale, food.y * scale, scale - 2, scale - 2);
+    }
+
+    function startGame() {
+      clearInterval(interval);
+      clearInterval(timer);
+
+      snake = new Snake();
+      placeFood();
+      seconds = 0;
+
+      scoreEl.innerText = "0";
+      timeEl.innerText = "0";
+      scoreEl.classList.remove("highlight");
+      timeEl.classList.remove("highlight");
+
+      interval = setInterval(gameLoop, 100);
+      timer = setInterval(() => {
+        seconds++;
+        timeEl.innerText = seconds;
+      }, 1000);
+    }
+
+    function endGame() {
+      clearInterval(interval);
+      clearInterval(timer);
+      scoreEl.classList.add("highlight");
+      timeEl.classList.add("highlight");
+      startBtn.textContent = "Play Again";
+    }
+
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      snake.update();
+      snake.draw();
+      drawFood();
+      scoreEl.innerText = snake.total;
+    }
+
+    window.addEventListener("keydown", e => snake.changeDirection(e.key));
+    startBtn.addEventListener("click", startGame);
+  </script>
+</body>
+</html>
